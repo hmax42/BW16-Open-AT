@@ -8,11 +8,6 @@
  based on the work of https://gist.github.com/EstebanFuentealba/3da9ccecefa7e1b44d84e7cfaad2f35f
  */
 
-const byte numChars = 32;
-char receivedChars[numChars];
-
-boolean newData = false;
-
 #include <WiFi.h>
 #include <wifi_conf.h>
 
@@ -24,6 +19,42 @@ static uint8_t _networkChannel[WL_NETWORKS_LIST_MAXNUM];
 static uint8_t _networkBand[WL_NETWORKS_LIST_MAXNUM];
 static char _networkMac[WL_NETWORKS_LIST_MAXNUM][18];
 
+const byte numChars = 32;
+char receivedChars[numChars];
+boolean newData = false;
+
+
+void setup() {
+  // Initialize Serial1 and wait for port to open:
+  Serial1.begin(38400);
+  while (!Serial1) {
+    ;  // wait for Serial1 port to connect. Needed for native USB port only
+  }
+  // Initialize the onboard WiFi:
+  WiFi.status();
+}
+
+void loop() {
+  recvWithStartEndMarkers();
+  if (newData) {
+    if (strcmp(receivedChars, "ATWS") == 0) {
+      ATWS();
+    }
+    if (strcmp(receivedChars, "AT") == 0) {
+      Serial1.println("OK");
+    }
+    newData = false;
+  }
+  if (_networkCount > 0) {
+    printNetworkList();
+    _networkCount = 0;
+  }
+}
+
+
+// The following code is for handling the WiFi scanning.
+
+// Scanning code taken from 
 static rtw_result_t wifidrv_scan_result_handler(rtw_scan_handler_result_t *malloced_scan_result) {
   rtw_scan_result_t *record;
 
@@ -46,6 +77,8 @@ static rtw_result_t wifidrv_scan_result_handler(rtw_scan_handler_result_t *mallo
   return RTW_SUCCESS;
 }
 
+// Converts SDK identified network types to a human readable string. These strings need to match on
+// in ESP-B in wardriver.uk code
 String getEncryptionTypeEx(uint32_t thisType) {
   switch (thisType) {
     case RTW_SECURITY_OPEN:
@@ -89,59 +122,8 @@ String getEncryptionTypeEx(uint32_t thisType) {
   }
 }
 
-static int8_t ATWS() {
-  _networkCount = 0;
-  if (wifi_scan_networks(wifidrv_scan_result_handler, NULL) != RTW_SUCCESS) {
-    return WL_FAILURE;
-  }
-  return _networkCount;
-}
 
-
-void setup() {
-  // Initialize Serial1 and wait for port to open:
-  Serial1.begin(38400);
-  while (!Serial1) {
-    ;  // wait for Serial1 port to connect. Needed for native USB port only
-  }
-  // Initialize the onboard WiFi:
-  WiFi.status();
-}
-
-void loop() {
-  recvWithStartEndMarkers();
-  if (newData) {
-    if (strcmp(receivedChars, "ATWS") == 0) {
-      ATWS();
-    }
-    if (strcmp(receivedChars, "AT") == 0) {
-      Serial1.println("OK");
-    }
-    newData = false;
-  }
-  if (_networkCount > 0) {
-    printNetworkList();
-    _networkCount = 0;
-  }
-}
-
-void printNetworkList() {
-  for (int network = 0; network < _networkCount; network++) {
-    Serial1.print("AP : ");
-    Serial1.print(network + 1);
-    Serial1.print(",");
-    Serial1.print(_networkSsid[network]);
-    Serial1.print(",");
-    Serial1.print(_networkChannel[network]);
-    Serial1.print(",");
-    Serial1.print(getEncryptionTypeEx(_networkEncr[network]));
-    Serial1.print(",");
-    Serial1.print(_networkRssi[network]);
-    Serial1.print(",");
-    Serial1.print(_networkMac[network]);
-    Serial1.println("");
-  }
-}
+//The following code is related to correctly handling serial input
 
 void recvWithStartEndMarkers() {
   static boolean recvInProgress = false;
@@ -173,5 +155,33 @@ void recvWithStartEndMarkers() {
       ndx++;
       recvInProgress = true;
     }
+  }
+}
+
+
+//The following code is for handling AT commands
+static int8_t ATWS() {
+  _networkCount = 0;
+  if (wifi_scan_networks(wifidrv_scan_result_handler, NULL) != RTW_SUCCESS) {
+    return WL_FAILURE;
+  }
+  return _networkCount;
+}
+
+void printNetworkList() {
+  for (int network = 0; network < _networkCount; network++) {
+    Serial1.print("AP : ");
+    Serial1.print(network + 1);
+    Serial1.print(",");
+    Serial1.print(_networkSsid[network]);
+    Serial1.print(",");
+    Serial1.print(_networkChannel[network]);
+    Serial1.print(",");
+    Serial1.print(getEncryptionTypeEx(_networkEncr[network]));
+    Serial1.print(",");
+    Serial1.print(_networkRssi[network]);
+    Serial1.print(",");
+    Serial1.print(_networkMac[network]);
+    Serial1.println("");
   }
 }
