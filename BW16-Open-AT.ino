@@ -25,13 +25,15 @@ boolean newData = false;
 
 
 void setup() {
-  // Initialize Serial1 and wait for port to open:
+  // Initialize Serial1 and wait for port to open
+  // 38400 used to match default speed of B&T AT firmware
   Serial1.begin(38400);
   while (!Serial1) {
     ;  // wait for Serial1 port to connect. Needed for native USB port only
   }
-  // Initialize the onboard WiFi:
+  // Initialize the onboard WiFi and set channel plan to allow for 5GHz:
   WiFi.status();
+  wifi_set_channel_plan(RTW_COUNTRY_WORLD);
 }
 
 void loop() {
@@ -42,6 +44,28 @@ void loop() {
     }
     if (strcmp(receivedChars, "AT") == 0) {
       Serial1.println("OK");
+    }
+    if (strcmp(receivedChars, "ATAT") == 0) {
+      Serial1.println("");
+      Serial1.println("                ________");
+      Serial1.println("            _.-'::'\\____`.");
+      Serial1.println("          ,'::::'  |,------.");
+      Serial1.println("         /::::'    ||`-..___;");
+      Serial1.println("        ::::'      ||   / ___\\");
+      Serial1.println("        |::       _||  [ [___]]");
+      Serial1.println("        |:   __,-'  `-._\\__._/");
+      Serial1.println("        :_,-\\  \\| |,-'_,. . `.");
+      Serial1.println("        | \\  \\  | |.-'_,-\\ \\   ~");
+      Serial1.println("        | |`._`-| |,-|    \\ \\    ~");
+      Serial1.println("        |_|`----| ||_|     \\ \\     ~              _");
+      Serial1.println("        [_]     |_|[_]     [[_]      ~        __(  )");
+      Serial1.println("        | |    [[_]| |     `| |        ~    _(   )   )");
+      Serial1.println("        |_|    `| ||_|      |_|          ~ (    ) ) ))");
+      Serial1.println("        [_]     | |[_]      [_]          (_       _))");
+      Serial1.println("       /___\\    [ ] __\\    /___\\           (( \\   ) )");
+      Serial1.println("jrei          /___\\                        (     ) )");
+      Serial1.println("                                             (  #  )");
+      Serial1.println("");
     }
     newData = false;
   }
@@ -54,7 +78,7 @@ void loop() {
 
 // The following code is for handling the WiFi scanning.
 
-// Scanning code taken from 
+// Scanning code taken from https://gist.github.com/designer2k2/2dc8c4a06394fdba91f3655dc9be9728
 static rtw_result_t wifidrv_scan_result_handler(rtw_scan_handler_result_t *malloced_scan_result) {
   rtw_scan_result_t *record;
 
@@ -124,12 +148,11 @@ String getEncryptionTypeEx(uint32_t thisType) {
 
 
 //The following code is related to correctly handling serial input
-
 void recvWithStartEndMarkers() {
   static boolean recvInProgress = false;
   static byte ndx = 0;
   char startMarker = 'A';
-  char endMarker = '\n';
+  char endMarker = '\r';
   char rc;
 
   while (Serial1.available() > 0 && newData == false) {
