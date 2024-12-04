@@ -46,26 +46,7 @@ void loop() {
       Serial1.println("OK");
     }
     if (strcmp(receivedChars, "ATAT") == 0) {
-      Serial1.println("");
-      Serial1.println("                ________");
-      Serial1.println("            _.-'::'\\____`.");
-      Serial1.println("          ,'::::'  |,------.");
-      Serial1.println("         /::::'    ||`-..___;");
-      Serial1.println("        ::::'      ||   / ___\\");
-      Serial1.println("        |::       _||  [ [___]]");
-      Serial1.println("        |:   __,-'  `-._\\__._/");
-      Serial1.println("        :_,-\\  \\| |,-'_,. . `.");
-      Serial1.println("        | \\  \\  | |.-'_,-\\ \\   ~");
-      Serial1.println("        | |`._`-| |,-|    \\ \\    ~");
-      Serial1.println("        |_|`----| ||_|     \\ \\     ~              _");
-      Serial1.println("        [_]     |_|[_]     [[_]      ~        __(  )");
-      Serial1.println("        | |    [[_]| |     `| |        ~    _(   )   )");
-      Serial1.println("        |_|    `| ||_|      |_|          ~ (    ) ) ))");
-      Serial1.println("        [_]     | |[_]      [_]          (_       _))");
-      Serial1.println("       /___\\    [ ] __\\    /___\\           (( \\   ) )");
-      Serial1.println("jrei          /___\\                        (     ) )");
-      Serial1.println("                                             (  #  )");
-      Serial1.println("");
+      ATAT();
     }
     newData = false;
   }
@@ -191,6 +172,29 @@ static int8_t ATWS() {
   return _networkCount;
 }
 
+void ATAT() {
+  Serial1.println("");
+  Serial1.println("                ________");
+  Serial1.println("            _.-'::'\\____`.");
+  Serial1.println("          ,'::::'  |,------.");
+  Serial1.println("         /::::'    ||`-..___;");
+  Serial1.println("        ::::'      ||   / ___\\");
+  Serial1.println("        |::       _||  [ [___]]");
+  Serial1.println("        |:   __,-'  `-._\\__._/");
+  Serial1.println("        :_,-\\  \\| |,-'_,. . `.");
+  Serial1.println("        | \\  \\  | |.-'_,-\\ \\   ~");
+  Serial1.println("        | |`._`-| |,-|    \\ \\    ~");
+  Serial1.println("        |_|`----| ||_|     \\ \\     ~              _");
+  Serial1.println("        [_]     |_|[_]     [[_]      ~        __(  )");
+  Serial1.println("        | |    [[_]| |     `| |        ~    _(   )   )");
+  Serial1.println("        |_|    `| ||_|      |_|          ~ (    ) ) ))");
+  Serial1.println("        [_]     | |[_]      [_]          (_       _))");
+  Serial1.println("       /___\\    [ ] __\\    /___\\           (( \\   ) )");
+  Serial1.println("jrei          /___\\                        (     ) )");
+  Serial1.println("                                             (  #  )");
+  Serial1.println("");
+}
+
 void printNetworkList() {
   for (int network = 0; network < _networkCount; network++) {
     Serial1.print("AP : ");
@@ -207,4 +211,5 @@ void printNetworkList() {
     Serial1.print(_networkMac[network]);
     Serial1.println("");
   }
+  Serial1.println("[ATWS]");
 }
