@@ -44,7 +44,6 @@ void setup() {
   // Initialize the onboard WiFi and set channel plan to allow for 5GHz:
   WiFi.status();
   wifi_set_channel_plan(RTW_COUNTRY_WORLD);
-  wifi_set_channel(36);
 }
 
 void loop() {
