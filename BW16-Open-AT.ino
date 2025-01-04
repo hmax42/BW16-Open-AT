@@ -11,6 +11,16 @@
 #include <WiFi.h>
 #include <wifi_conf.h>
 
+// The SDK sets the maximum number of wifi networks found to be 50. We need more for wardriving
+// in dense areas.
+#ifdef WL_NETWORKS_LIST_MAXNUM //if the macro WL_NETWORKS_LIST_MAXNUM is defined 
+  #undef WL_NETWORKS_LIST_MAXNUM //un-define it
+#endif 
+
+#ifndef WL_NETWORKS_LIST_MAXNUM //if the macro WL_NETWORKS_LIST_MAXNUM is not defined 
+  #define WL_NETWORKS_LIST_MAXNUM 64 //define it with the new value
+#endif 
+
 static uint8_t _networkCount;
 static char _networkSsid[WL_NETWORKS_LIST_MAXNUM][WL_SSID_MAX_LENGTH];
 static int32_t _networkRssi[WL_NETWORKS_LIST_MAXNUM];
@@ -34,6 +44,7 @@ void setup() {
   // Initialize the onboard WiFi and set channel plan to allow for 5GHz:
   WiFi.status();
   wifi_set_channel_plan(RTW_COUNTRY_WORLD);
+  wifi_set_channel(36);
 }
 
 void loop() {
