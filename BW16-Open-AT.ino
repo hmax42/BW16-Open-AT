@@ -8,6 +8,10 @@
  based on the work of https://gist.github.com/EstebanFuentealba/3da9ccecefa7e1b44d84e7cfaad2f35f
  */
 
+const byte numChars = 64;
+char receivedChars[numChars];
+boolean newData = false;
+
 #include <WiFi.h>
 #include <wifi_conf.h>
 
@@ -29,10 +33,16 @@ static uint8_t _networkChannel[WL_NETWORKS_LIST_MAXNUM];
 static uint8_t _networkBand[WL_NETWORKS_LIST_MAXNUM];
 static char _networkMac[WL_NETWORKS_LIST_MAXNUM][18];
 
-const byte numChars = 32;
-char receivedChars[numChars];
-boolean newData = false;
+//OTA setup 
+#include <OTA.h>
+#include <AmebaMDNS.h>
+#define OTA_PORT 8082
+OTA ota;
+MDNSService service("BW16-Open-AT", "_arduino._tcp", "local", 5000);
 
+char ssid[sizeof(receivedChars) - 6];       // your network SSID (name)
+char pass[sizeof(receivedChars) - 6];           // your network password (use for WPA, or use as key for WEP)
+int status = WL_IDLE_STATUS;        // Indicator of Wifi status
 
 void setup() {
   // Initialize Serial1 and wait for port to open
@@ -41,6 +51,7 @@ void setup() {
   while (!Serial1) {
     ;  // wait for Serial1 port to connect. Needed for native USB port only
   }
+  Serial1.println("Welcome to BW16-Open-AT!");
   // Initialize the onboard WiFi and set channel plan to allow for 5GHz:
   WiFi.status();
   wifi_set_channel_plan(RTW_COUNTRY_WORLD);
@@ -49,6 +60,7 @@ void setup() {
 void loop() {
   recvWithStartEndMarkers();
   if (newData) {
+    Serial1.println();
     if (strcmp(receivedChars, "ATWS") == 0) {
       ATWS();
     }
@@ -57,6 +69,19 @@ void loop() {
     }
     if (strcmp(receivedChars, "ATAT") == 0) {
       ATAT();
+    }
+    if (strcmp(receivedChars, "ATOTA") == 0) {
+      ATOTA();
+    }
+    if (strncmp(receivedChars, "ATSSID", 6) == 0) {
+      strncpy(ssid, receivedChars + 6, sizeof(receivedChars) - 6);
+      Serial1.println(ssid);
+      Serial1.println("ATSSID OK");
+    }
+    if (strncmp(receivedChars, "ATPASS", 6) == 0) {
+      strncpy(pass, receivedChars + 6, sizeof(receivedChars) - 6);
+      Serial1.println(pass);
+      Serial1.println("ATPASS OK");
     }
     newData = false;
   }
@@ -222,4 +247,57 @@ void printNetworkList() {
     Serial1.println("");
   }
   Serial1.println("[ATWS]");
+}
+
+void ATOTA() {
+  while (status != WL_CONNECTED) {
+      Serial1.print("[MAIN] Attempting to connect to SSID: ");
+      Serial1.println(ssid);
+      // Connect to WPA/WPA2 network. Change this line if using open or WEP
+      // network:
+      status = WiFi.begin(ssid, pass);
+      // wait 10 seconds for connection:
+      delay(10000);
+  }
+  // you're connected now, so print out the status:
+  printWifiStatus();
+
+  // setup MDNS service to host OTA Server on the
+  // Arduino Network Port
+  beginMDNSService();
+
+  // start connecting to OTA server and reboot 
+  // with the new image
+  ota.beginOTA(OTA_PORT);
+}
+
+void printWifiStatus() {
+    // print the SSID of the network you're attached to:
+    Serial1.println();
+    Serial1.print("SSID: ");
+    Serial1.println(WiFi.SSID());
+
+    // print your WiFi shield's IP address:
+    IPAddress ip = WiFi.localIP();
+    Serial1.print("IP Address: ");
+    Serial1.println(ip);
+
+    // print the received signal strength:
+    long rssi = WiFi.RSSI();
+    Serial1.print("signal strength (RSSI):");
+    Serial1.print(rssi);
+    Serial1.println(" dBm");
+}
+
+void beginMDNSService() {
+    service.addTxtRecord("board", strlen("ameba_rtl8721d"), "ameba_rtl8721d");
+    service.addTxtRecord("auth_upload", strlen("no"), "no");
+    service.addTxtRecord("tcp_check", strlen("no"), "no");
+    service.addTxtRecord("ssh_upload", strlen("no"), "no");
+
+    printf("Start mDNS service\r\n");
+    MDNS.begin();
+
+    printf("register mDNS service\r\n");
+    MDNS.registerService(service);
 }
