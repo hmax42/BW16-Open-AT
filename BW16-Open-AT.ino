@@ -45,6 +45,25 @@ char pass[sizeof(receivedChars) - 6];           // your network password (use fo
 int status = WL_IDLE_STATUS;        // Indicator of Wifi status
 
 void setup() {
+  //Serial.begin(115200);
+  //Color cycle LED then turn off
+  pinMode(LED_G, OUTPUT);
+  pinMode(LED_B, OUTPUT);
+  pinMode(LED_R, OUTPUT);
+  digitalWrite(LED_G, HIGH);
+  digitalWrite(LED_B, HIGH);
+  digitalWrite(LED_R, HIGH);
+  //Serial.println("LED On");
+  digitalWrite(LED_G, LOW);
+  delay(500);
+  digitalWrite(LED_B, LOW);
+  delay(500);
+  digitalWrite(LED_R, LOW);
+  delay(500);
+  //Serial.println("LED Off");
+  digitalWrite(LED_G, HIGH);
+  digitalWrite(LED_B, HIGH);
+  digitalWrite(LED_R, HIGH);
   // Initialize Serial1 and wait for port to open
   // 38400 used to match default speed of B&T AT firmware
   Serial1.begin(38400);
