@@ -8,6 +8,10 @@
  based on the work of https://gist.github.com/EstebanFuentealba/3da9ccecefa7e1b44d84e7cfaad2f35f
  */
 
+//switch values for green bw16, both HIGH for always off on purple board, both LOW for always off on green board
+#define LED_ON LOW  //for purple bw16
+#define LED_OFF HIGH  //for purple bw16
+
 const byte numChars = 64;
 char receivedChars[numChars];
 boolean newData = false;
@@ -50,20 +54,21 @@ void setup() {
   pinMode(LED_G, OUTPUT);
   pinMode(LED_B, OUTPUT);
   pinMode(LED_R, OUTPUT);
-  digitalWrite(LED_G, HIGH);
-  digitalWrite(LED_B, HIGH);
-  digitalWrite(LED_R, HIGH);
+  digitalWrite(LED_G, LED_OFF);
+  digitalWrite(LED_B, LED_OFF);
+  digitalWrite(LED_R, LED_OFF);
   //Serial.println("LED On");
-  digitalWrite(LED_G, LOW);
-  delay(500);
-  digitalWrite(LED_B, LOW);
-  delay(500);
-  digitalWrite(LED_R, LOW);
-  delay(500);
+  digitalWrite(LED_G, LED_ON); // actually Blue channel on purple board
+  delay(250);
+  digitalWrite(LED_B, LED_ON); // actually Green channel on purple board
+  delay(250);
+  digitalWrite(LED_R, LED_ON);
+  delay(250);
   //Serial.println("LED Off");
-  digitalWrite(LED_G, HIGH);
-  digitalWrite(LED_B, HIGH);
-  digitalWrite(LED_R, HIGH);
+  digitalWrite(LED_G, LED_OFF);
+  digitalWrite(LED_B, LED_OFF);
+  digitalWrite(LED_R, LED_OFF);
+  
   // Initialize Serial1 and wait for port to open
   // 38400 used to match default speed of B&T AT firmware
   Serial1.begin(38400);
